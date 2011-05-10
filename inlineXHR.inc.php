@@ -3,6 +3,12 @@
 	* inlineXHR - Copyright Eaktion.com - All rights reserved
     * http://www.eaktion.com/inlinexhr/
     * 
+    * This PHP code is designed to work together with a YUI 3 module to 
+    * straighten out the AJAX pattern for you.
+    *
+    * Find the YUI 3 module in the YUILibrary: 
+    * https://github.com/tribis/yui3-gallery/tree/master/build/gallery-split-desktop
+    * 
     * The PHP code of this PHP/JavaScript package is based on 
     * http://www.satyam.com.ar/yui/PhpJson.htm
     * trimmed and modified into a pattern that allows a response object being passed 
@@ -31,8 +37,6 @@
     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
-	
-	
 abstract class Dispatcher {
         protected function &accessObject (self $pObj) {
             return $pObj;
