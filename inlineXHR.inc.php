@@ -7,7 +7,7 @@
     * straighten out the AJAX pattern for you.
     *
     * Find the YUI 3 module in the YUILibrary: 
-    * https://github.com/tribis/yui3-gallery/tree/master/build/gallery-split-desktop
+    * https://github.com/tribis/yui3-gallery/tree/master/build/gallery-inline-xhr
     * 
     * The PHP code of this PHP/JavaScript package is based on 
     * http://www.satyam.com.ar/yui/PhpJson.htm
