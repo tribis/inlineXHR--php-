@@ -49,14 +49,14 @@ class smarty2_insert_process_extension {
 		
 	}
 	
-	public function run_process($params, &$smarty, &$response)
+	public function run_process($params, &$response, &$smarty)
 	{
 		$plugin_name 	= $params['func'];
 		$data 			= $params['data'];
 	
 		require_once ($smarty->_get_plugin_filepath('insert', $plugin_name));
 
-		call_user_func('smarty_insert_' . $plugin_name, $data, $smarty, $response);
+		call_user_func('smarty_insert_' . $plugin_name, $data, $response, $smarty);
 
 	}
 }
@@ -68,14 +68,14 @@ class smarty3_insert_process_extension {
 		
 	}
 	
-	public function run_process($params, &$smarty, &$response)
+	public function run_process($params, &$response, &$smarty)
 	{
 		$plugin_name 	= $params['func'];
 		$data 			= $params['data'];
 	
 		require_once ($smarty->loadPlugin('smarty_insert_' . $plugin_name));
 
-		call_user_func('smarty_insert_' . $plugin_name, $data, $smarty, $response);
+		call_user_func('smarty_insert_' . $plugin_name, $data, $response, $smarty);
 
 	}
 }
@@ -137,9 +137,9 @@ class process_extension
 
 	}
 	
-	function call_process($params, &$obj, &$response)
+	function call_process($params, &$response, &$obj)
 	{
-		$this->ext->run_process($params, $obj, $response);
+		$this->ext->run_process($params, $response, $obj);
 	}
 }
 
@@ -374,7 +374,7 @@ class ajaxProcessor extends Dispatcher
 			$params['func'] = $func;
 			$params['data'] = $data;
 			$this->add_headers();
-			$this->ext->call_process($params, $obj, $this->response);
+			$this->ext->call_process($params, $this->response, $obj);
 			
 		}else{
 			//otherwise execute standard code			
