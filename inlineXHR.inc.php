@@ -257,8 +257,7 @@ class ajaxProcessor extends Dispatcher
 	 * @param false or string $className
 	 */
 	function __construct($className = false, $debug = false)
-	{		
-		set_error_handler(array($this,'ajaxErrorHandler'));
+	{
 		
 		if(is_string($className)){
 			$this->configure('classname', $className);
@@ -285,6 +284,9 @@ class ajaxProcessor extends Dispatcher
 		$errstr = str_replace("\n","",$errstr);
 		$errstr = str_replace("\r","",$errstr);
 		$errstr = str_replace("\t","",$errstr);
+		
+		//bypass errors prepended by the @ error-control operator. 
+		if (!($errno & error_reporting())) return true;
 		
 	    switch ($errno) {
 	        case E_USER_ERROR:
@@ -434,6 +436,10 @@ class ajaxProcessor extends Dispatcher
 
 		//only intervene if this is an ajax transaction
 		if (strlen($this->ajaxAction)) {
+			
+			//set the error handler only for ajax transactions
+			set_error_handler(array($this,'ajaxErrorHandler'));
+			
 			if(!preg_match($this->VALID_FUNC_NAME_REG,$this->ajaxAction)){
 				$this->response->_reply(602,"action name " . 
 										($this->DEBUG ? ": " . $this->ajaxAction : "") . 
