@@ -1,4 +1,14 @@
 <?php
+
+	/*
+	  Complete examples and documentation for this package at:
+				
+				www.eaktion.com/inlinexhr/
+				
+	*/
+	
+					/* Copyright notices */
+	
 	/* 
 	* smarty_plugin_process_extension and
 	* smarty3_plugin_process_extension - Copyright Eaktion.com - All rights reserved
