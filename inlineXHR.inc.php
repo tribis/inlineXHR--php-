@@ -1,13 +1,89 @@
 <?php
+
+	/*
+	  Complete examples and documentation for this package at:
+				
+				www.eaktion.com/inlinexhr/
+				
+	*/
+	
+					/* Copyright notices */
+	
+	/* 
+	* smarty_plugin_process_extension and
+	* smarty3_plugin_process_extension - Copyright Eaktion.com - All rights reserved
+    * http://www.eaktion.com/inlinexhr/
+    * 
+    * Two classes to extend inlineXHR(php) in a way that makes it able to 
+    * to call smarty insert functions from inside a YUI 3 JavaScript code.
+    *
+    * Released under BSD licence
+    * Redistribution and use in source and binary forms, with or without
+    * modification, are permitted provided that the following conditions are met:
+    *     * Redistributions of source code must retain the above copyright
+    *       notice, this list of conditions and the following disclaimer.
+    *     * Redistributions in binary form must reproduce the above copyright
+    *       notice, this list of conditions and the following disclaimer in the
+    *       documentation and/or other materials provided with the distribution.
+    *     * Neither the name of Eaktion.com / Eaktion ApS nor the
+    *       names of its contributors may be used to endorse or promote products
+    *       derived from this software without specific prior written permission.
+    *
+    * THIS SOFTWARE IS PROVIDED BY Eaktion ApS ``AS IS'' AND ANY
+    * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    * DISCLAIMED. IN NO EVENT SHALL Eaktion ApS BE LIABLE FOR ANY
+    * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    */
+
+
+class smarty2_insert_process_extension {
+	
+	public function __construct()
+	{
+		
+	}
+	
+	public function run_process($params, &$response, &$smarty)
+	{
+		$plugin_name 	= $params['func'];
+		$data 			= $params['data'];
+	
+		require_once ($smarty->_get_plugin_filepath('insert', $plugin_name));
+
+		call_user_func('smarty_insert_' . $plugin_name, $data, $response, $smarty);
+
+	}
+}
+
+class smarty3_insert_process_extension {
+	
+	public function __construct()
+	{
+		
+	}
+	
+	public function run_process($params, &$response, &$smarty)
+	{
+		$plugin_name 	= $params['func'];
+		$data 			= $params['data'];
+	
+		require_once ($smarty->loadPlugin('smarty_insert_' . $plugin_name));
+
+		call_user_func('smarty_insert_' . $plugin_name, $data, $response, $smarty);
+
+	}
+}
+
+
 	/* 
 	* inlineXHR - Copyright Eaktion.com - All rights reserved
     * http://www.eaktion.com/inlinexhr/
-    * 
-    * This PHP code is designed to work together with a YUI 3 module to 
-    * straighten out the AJAX pattern for you.
-    *
-    * Find the YUI 3 module in the YUILibrary: 
-    * https://github.com/tribis/yui3-gallery/tree/master/build/gallery-inline-xhr
     * 
     * The PHP code of this PHP/JavaScript package is based on 
     * http://www.satyam.com.ar/yui/PhpJson.htm
@@ -37,14 +113,36 @@
     * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
-abstract class Dispatcher {
-        protected function &accessObject (self $pObj) {
-            return $pObj;
-        }
-        protected function invokeMethod ($pObj, $pName, $pArgs) {
-            return call_user_func_array(array($pObj, $pName), $pArgs);
-        }
-    }
+
+	
+	
+abstract class Dispatcher 
+{
+	protected function &accessObject (self $pObj) {
+		return $pObj;
+	}
+	protected function invokeMethod ($pObj, $pName, $pArgs) {
+		return call_user_func_array(array($pObj, $pName), $pArgs);
+	}
+}
+
+class process_extension 
+{
+	private $ext_name = '';
+	private $ext = null;
+	
+	function __construct($ext_name){
+		$this->ext_name = $ext_name;
+		$this->ext = new $this->ext_name;
+
+	}
+	
+	function call_process($params, &$response, &$obj)
+	{
+		$this->ext->run_process($params, $response, $obj);
+	}
+}
+
 
 class ajaxResponse extends Dispatcher
 {
@@ -66,9 +164,14 @@ class ajaxResponse extends Dispatcher
 	 * @param string $sName the function/method name
 	 * @param mixed $sArg
 	 */
-	public function callMethod($sName, $mArg)
+	public function callMethod($sName)//removing one mandatory arg
 	{
-		$this->return[] = array('f'=>(string)$sName , 'a'=>$mArg);
+		/* $sName is mandatory
+		  one or more $mArgs are optional		  
+		*/
+		$mArgs = func_get_args();
+		array_shift($mArgs);
+		$this->return[] = array('f'=>(string)$sName , 'a'=>$mArgs);
 	}	
 	
 	/**
@@ -108,7 +211,7 @@ class ajaxResponse extends Dispatcher
 	}
 	
 	/**
-	 * All proceded well, a function or method asks to send its data
+	 * All proceeded well, a function or method asks to send its data
 	 *
 	 */
 	public function reply()
@@ -145,6 +248,7 @@ class ajaxProcessor extends Dispatcher
 	private $CLASS_NAME 	= false;
 	private $METHOD 		= 'POST';
 	private $DEBUG 			= false;
+	private $ext			= null;
 
 	/**
 	 * Costructor
@@ -219,47 +323,22 @@ class ajaxProcessor extends Dispatcher
 	 * Otherwise send an error response and exit.
 	 *
 	 * @todo add capability to provide a catch all func/method
+	 * @param obj an object, to call inlineXHR from inside an arbitrary oject and execute it in its scope
 	 * @return exit or objResponse
 	 */
-	public function process()
+	public function process(&$obj = null)
 	{
 		if ($this->parseRequest()) {
-			
-			$debug 		= $this->DEBUG;
-			$className 	= $this->CLASS_NAME;
-			$func 		= $this->ajaxAction;
-			$data 		= $this->data;
-			
-			if ($className && method_exists($this->CLASS_NAME, $func)) {
-				$this->add_headers();
-				/**
-				* http://www.satyam.com.ar/yui/PhpJson.htm
-				* Modified into a pattern where a response object is passed to the funcs or methods 
-				*/
-				$obj = new $className();
-				$this->add_headers();
-				$obj->$func($data,$this->response);//response should terminate, however continuing below just in case
-				$msgArgs = array(604,'improper setup: did you forget to call ajaxResponse::reply()?');
-				$this->invokeMethod(
-										$this->response,
-										'_reply',
-										$msgArgs);
 
-			} elseif (!$className && function_exists($func)) {
-
-				$this->add_headers();
-				$func($data,$this->response);//response should terminate, however continuing below just in case
-				$msgArgs = array(604,'improper setup: did you forget to call ajaxResponse::reply()?');
-				$this->invokeMethod(
-										$this->response,
-										'_reply',
-										$msgArgs);
-			}
+			//try an extension to work with ZF to see hwat would be required for it to work.
+			$this->do_process($obj);
+			
 			/**
 			 * @todo catch all?
 			 */
 			
 			//using dispatcher to circumvent restriction on use of protected _reply
+			//run code below if do_process() fails to catch the ajaxAction
 			$msgArgsClass = array(601,
 									"Method not defined" . ($this->DEBUG ? ": " . $func . " for class: " . $this->CLASS_NAME . "." : ".")
 									);
@@ -279,6 +358,55 @@ class ajaxProcessor extends Dispatcher
 		}
 		//no AJAX request found, parseRequest returns false 
 	}
+	
+	private function do_process(&$obj = null)
+	{
+		$debug 		= $this->DEBUG;
+		$className 	= $this->CLASS_NAME;
+		$func 		= $this->ajaxAction;
+		$data 		= $this->data;
+
+		//check if an extension is usable
+		if(is_object($this->ext) && is_callable(array($this->ext, 'call_process'))){
+			
+			$params['debug'] = $debug;
+			$params['className'] = $className;
+			$params['func'] = $func;
+			$params['data'] = $data;
+			$this->add_headers();
+			$this->ext->call_process($params, $this->response, $obj);
+			
+		}else{
+			//otherwise execute standard code			
+			if ($className && method_exists($this->CLASS_NAME, $func)) {
+				$this->add_headers();
+				/**
+				* http://www.satyam.com.ar/yui/PhpJson.htm
+				* Modified into a pattern where a response object is passed to the funcs or methods 
+				*/
+				$obj = new $className();
+				$this->add_headers();
+				$obj->$func($data,$this->response);//response should terminate, however continuing below just in case
+				$msgArgs = array(604,'improper setup: did you forget to call ajaxResponse::reply()?');
+				$this->invokeMethod(
+					$this->response,
+					'_reply',
+					$msgArgs
+				);
+
+			} elseif (!$className && function_exists($func)) {
+
+				$this->add_headers();
+				$func($data,$this->response);//response should terminate, however continuing below just in case
+				$msgArgs = array(604,'improper setup: did you forget to call ajaxResponse::reply()?');
+				$this->invokeMethod(
+					$this->response,
+					'_reply',
+					$msgArgs
+				);
+			}
+		}
+	}
 
 	private function add_headers()
 	{
@@ -295,7 +423,7 @@ class ajaxProcessor extends Dispatcher
 		if ('GET' === $this->METHOD) {
 			$useGET = true;
 		}
-		
+
 		if ($useGET) {
 			$this->ajaxAction = trim($_GET['ajaxAction']);
 			unset($_GET['ajaxAction']);
@@ -303,7 +431,7 @@ class ajaxProcessor extends Dispatcher
 			$this->ajaxAction = trim($_POST['ajaxAction']);
 			unset($_POST['ajaxAction']);
 		}
-		
+
 		//only intervene if this is an ajax transaction
 		if (strlen($this->ajaxAction)) {
 			if(!preg_match($this->VALID_FUNC_NAME_REG,$this->ajaxAction)){
@@ -359,7 +487,11 @@ class ajaxProcessor extends Dispatcher
 				if(preg_match($this->VALID_FUNC_NAME_REG,trim($value))){
 					$this->CLASS_NAME = trim($value);
 				}
-				break;				
+				break;
+			case 'extension':
+				$extension_name = $value;
+				$this->ext = new process_extension($extension_name);
+				break;			
 		}
 	}
 }
