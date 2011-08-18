@@ -81,8 +81,8 @@ class smarty3_insert_process_extension {
 }
 
 
-	/* 
-	* inlineXHR - Copyright Eaktion.com - All rights reserved
+    /* 
+    * inlineXHR - Copyright Eaktion.com - All rights reserved
     * http://www.eaktion.com/inlinexhr/
     * 
     * The PHP code of this PHP/JavaScript package is based on 
@@ -342,10 +342,10 @@ class ajaxProcessor extends Dispatcher
 			//using dispatcher to circumvent restriction on use of protected _reply
 			//run code below if do_process() fails to catch the ajaxAction
 			$msgArgsClass = array(601,
-									"Method not defined" . ($this->DEBUG ? ": " . $func . " for class: " . $this->CLASS_NAME . "." : ".")
+									"Method not defined" . ($this->DEBUG ? ": " . $this->ajaxAction . " for class: " . $this->CLASS_NAME . "." : ".")
 									);
 			$msgArgsFunc = array(601,
-									"Function not defined" . ($this->DEBUG ? ": " . $func . "." : ".")
+									"Function not defined" . ($this->DEBUG ? ": " . $this->ajaxAction . "." : ".")
 									);
 
 			$this->CLASS_NAME ? 	$this->invokeMethod(
