@@ -246,7 +246,7 @@ class ajaxProcessor extends Dispatcher
 	private $data 			= false;
 	private $VALID_FUNC_NAME_REG = '/^[a-zA-Z_0-9]+$/';
 	private $CLASS_NAME 	= false;
-	private $METHOD 		= 'POST';
+	private $METHOD 		= 'GET';
 	private $DEBUG 			= false;
 	private $ext			= null;
 
@@ -286,7 +286,7 @@ class ajaxProcessor extends Dispatcher
 		$errstr = str_replace("\t","",$errstr);
 		
 		//bypass errors prepended by the @ error-control operator. 
-		if (!($errno & error_reporting())) return true;
+		if (!error_reporting()) return true;
 		
 	    switch ($errno) {
 	        case E_USER_ERROR:
@@ -420,10 +420,10 @@ class ajaxProcessor extends Dispatcher
 	
 	private function parseRequest()
 	{
-		$useGET = false;
+		$useGET = true;
 
-		if ('GET' === $this->METHOD) {
-			$useGET = true;
+		if ('POST' === $this->METHOD) {
+			$useGET = false;
 		}
 
 		if ($useGET) {
@@ -460,7 +460,7 @@ class ajaxProcessor extends Dispatcher
 	/**
 	 * Method to configure the processor to work in specific ways
 	 * Options (values) are: 
-	 * 	method ('POST','GET')
+	 * 	method ('POST','GET' default)
 	 *  debug (false, true)
 	 *  classname (aClassNameString)
 	 *
@@ -477,11 +477,11 @@ class ajaxProcessor extends Dispatcher
 		} else {
 			$value 	= (bool)($value);
 		}
-		
+
 		switch ($option) {
 			case 'method':
-				if('get' === $value){
-					$this->METHOD = 'GET';
+				if('post' === $value){
+					$this->METHOD = 'POST';
 				}
 				break;
 			case 'debug':
