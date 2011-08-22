@@ -420,18 +420,31 @@ class ajaxProcessor extends Dispatcher
 	
 	private function parseRequest()
 	{
-		$useGET = true;
-
-		if ('POST' === $this->METHOD) {
-			$useGET = false;
-		}
-
-		if ($useGET) {
+		$useGET		= false;
+		$usePOST 	= false;
+		$action		= false;
+		
+		if ('GET' === $this->METHOD) {
 			$this->ajaxAction = trim($_GET['ajaxAction']);
 			unset($_GET['ajaxAction']);
-		} else {
+			$useGET = true;
+			
+		} elseif('POST' === $this->METHOD)  {
 			$this->ajaxAction = trim($_POST['ajaxAction']);
 			unset($_POST['ajaxAction']);
+			$usePOST = true;
+			
+		}else{
+			//'auto' mode is default
+			if($this->ajaxAction = trim($_GET['ajaxAction'])){
+				unset($_GET['ajaxAction']);
+				$useGET = true;
+			}
+			
+			if($this->ajaxAction = trim($_POST['ajaxAction'])){
+				unset($_POST['ajaxAction']);
+				$usePOST = true;
+			}
 		}
 
 		//only intervene if this is an ajax transaction
