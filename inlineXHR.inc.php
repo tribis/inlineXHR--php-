@@ -246,7 +246,7 @@ class ajaxProcessor extends Dispatcher
 	private $data 			= false;
 	private $VALID_FUNC_NAME_REG = '/^[a-zA-Z_0-9]+$/';
 	private $CLASS_NAME 	= false;
-	private $METHOD 		= 'GET';
+	private $METHOD 		= null;
 	private $DEBUG 			= false;
 	private $ext			= null;
 
@@ -495,6 +495,9 @@ class ajaxProcessor extends Dispatcher
 			case 'method':
 				if('post' === $value){
 					$this->METHOD = 'POST';
+				}
+				if('get' === $value){
+					$this->METHOD = 'GET';
 				}
 				break;
 			case 'debug':
