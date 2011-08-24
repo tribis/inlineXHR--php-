@@ -439,9 +439,7 @@ class ajaxProcessor extends Dispatcher
 			if($this->ajaxAction = trim($_GET['ajaxAction'])){
 				unset($_GET['ajaxAction']);
 				$useGET = true;
-			}
-			
-			if($this->ajaxAction = trim($_POST['ajaxAction'])){
+			}elseif($this->ajaxAction = trim($_POST['ajaxAction'])){
 				unset($_POST['ajaxAction']);
 				$usePOST = true;
 			}
